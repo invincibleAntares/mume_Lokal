@@ -20,7 +20,7 @@ import SongListScreen from "../screens/SeeAll/SongListScreen";
 import ArtistDetailScreen from "../screens/Artist/ArtistDetailScreen";
 import ArtistsListScreen from "../screens/Artist/ArtistsListScreen";
 import SearchScreen from "../screens/Search/SearchScreen";
-
+import tw from "twrnc";
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 const Tab = createBottomTabNavigator();
@@ -39,7 +39,7 @@ function HomeStack() {
           animation: "slide_from_bottom",
         }}
       />
-      <Stack.Screen name="SongList" component={SongListScreen} />
+
       <Stack.Screen name="ArtistDetail" component={ArtistDetailScreen} />
       <Stack.Screen name="ArtistsList" component={ArtistsListScreen} />
       <Stack.Screen name="Search" component={SearchScreen} />
@@ -57,8 +57,24 @@ function CustomTabBar(props: BottomTabBarProps) {
   const hideMiniPlayer = focusedRouteName === "Player";
 
   return (
-    <View>
-      {!hideMiniPlayer && <MiniPlayer />}
+    <View style={tw`relative`}>
+      {!hideMiniPlayer && (
+        <View
+          style={[
+            tw`absolute left-0 right-0 mx-0 mb-2 rounded-lg overflow-hidden`,
+            {
+              bottom: 60,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: -2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              elevation: 8,
+            },
+          ]}
+        >
+          <MiniPlayer />
+        </View>
+      )}
       <BottomTabBar {...props} />
     </View>
   );
@@ -75,7 +91,6 @@ export default function BottomTabs() {
         tabBarStyle: {
           backgroundColor: theme.background,
           borderTopColor: theme.border,
-          height: 56,
         },
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.subText,

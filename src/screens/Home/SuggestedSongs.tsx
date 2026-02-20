@@ -26,7 +26,7 @@ export default function SuggestedSongs({
   const navigation = useNavigation<any>();
 
   return (
-    <View style={tw`mt-6`}>
+    <View style={tw`mt-6 mb-20`}>
       <View style={tw`flex-row justify-between px-4 mb-3`}>
         <Text style={[tw`text-lg font-semibold`, { color: theme.text }]}>
           Suggested Songs

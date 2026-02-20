@@ -21,7 +21,7 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
   const { theme } = useTheme();
   const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { songs: storeSongs } = useSongStore();
+  const { setCurrentSong } = useSongStore();
 
   useEffect(() => {
     loadArtistSongs();
@@ -32,7 +32,6 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
       setLoading(true);
       const artistSongs = await getArtistSongs(artist.id);
       setSongs(artistSongs);
-      // Update the store so songs can be played with next/prev functionality
       useSongStore.setState({ songs: artistSongs });
     } catch (error) {
       console.error("Failed to load artist songs:", error);
@@ -41,38 +40,121 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
     }
   };
 
-  return (
-    <SafeAreaView style={[tw`flex-1`, { backgroundColor: theme.background }]}>
-      {/* Header */}
-      <View style={tw`px-4 py-3 flex-row items-center`}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={tw`mr-4`}>
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
-        </TouchableOpacity>
-        <Text style={[tw`text-lg font-semibold`, { color: theme.text }]}>
-          Artist
-        </Text>
-      </View>
+  const playAll = () => {
+    if (songs.length > 0) {
+      useSongStore.setState({ songs });
+      setCurrentSong(songs[0]);
+    }
+  };
 
-      {/* Artist Info */}
-      <View style={tw`items-center mt-6`}>
-        <Image
-          source={{ uri: getBestImage(artist.image) }}
-          style={tw`w-32 h-32 rounded-full`}
-        />
-        <Text style={[tw`text-xl font-bold mt-4`, { color: theme.text }]}>
+  const ListHeader = () => (
+    <View style={tw`mb-4`}>
+      {/* Artist Hero Section */}
+      <View style={tw`items-center px-6 pt-6 pb-8`}>
+        {/* Large Image with Shadow */}
+        <View
+          style={[
+            tw`shadow-lg`,
+            {
+              shadowColor: theme.primary,
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.3,
+              shadowRadius: 20,
+              elevation: 10,
+            },
+          ]}
+        >
+          <Image
+            source={{ uri: getBestImage(artist.image) }}
+            style={tw`w-64 h-64 rounded-[35px]`}
+          />
+        </View>
+
+        {/* Artist Name */}
+        <Text
+          style={[
+            tw`text-3xl font-bold mt-8 text-center tracking-wide`,
+            { color: theme.text },
+          ]}
+        >
           {artist.name}
         </Text>
+
+        {/* Stats Row (Mimicking the "1 Album | 20 Songs" style) */}
+        <View style={tw`flex-row items-center mt-3 opacity-70`}>
+          <Text style={[tw`text-sm font-medium`, { color: theme.text }]}>
+            1 Album
+          </Text>
+          <Text style={[tw`mx-3 text-sm`, { color: theme.subText }]}>|</Text>
+          <Text style={[tw`text-sm font-medium`, { color: theme.text }]}>
+            {songs.length} Songs
+          </Text>
+          {/* Optional: Add duration if you have the data, otherwise leave it clean */}
+        </View>
+
+        {/* Big Action Button (No Shuffle) */}
+        {!loading && songs.length > 0 && (
+          <View style={tw`w-full flex-row mt-8 px-2`}>
+            <TouchableOpacity
+              onPress={playAll}
+              activeOpacity={0.8}
+              style={[
+                tw`flex-1 flex-row items-center justify-center py-4 rounded-full shadow-md`,
+                { backgroundColor: theme.primary }, // Matches the orange button style
+              ]}
+            >
+              <Ionicons name="play" size={24} color="white" style={tw`mr-2`} />
+              <Text style={tw`text-white font-bold text-lg tracking-wide`}>
+                Play
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
-      {/* Songs */}
+      {/* Section Header: Songs & See All */}
+      {!loading && songs.length > 0 && (
+        <View style={tw`flex-row items-center justify-between px-6 mt-2 mb-2`}>
+          <Text style={[tw`text-xl font-bold`, { color: theme.text }]}>
+            Songs
+          </Text>
+          <TouchableOpacity>
+            <Text style={[tw`text-sm font-semibold`, { color: theme.primary }]}>
+              See All
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={[tw`flex-1`, { backgroundColor: theme.background }]}>
+      {/* Top Navigation Bar */}
+      <View
+        style={tw`px-4 py-3 flex-row items-center absolute z-10 top-10 left-0`}
+      >
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={tw`p-2 rounded-full bg-black/20`} // Subtle background for visibility over content
+        >
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
       {loading ? (
-        <ActivityIndicator style={tw`mt-10`} size="large" />
+        <View style={tw`flex-1 items-center justify-center`}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
       ) : (
         <FlatList
           data={songs}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <SongRow song={item} />}
-          contentContainerStyle={tw`mt-6`}
+          ListHeaderComponent={ListHeader}
+          contentContainerStyle={tw`pb-32 pt-12`} // Added top padding for the absolute header
+          showsVerticalScrollIndicator={false}
         />
       )}
     </SafeAreaView>

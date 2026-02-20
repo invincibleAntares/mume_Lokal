@@ -19,11 +19,9 @@ export default function MiniPlayer() {
       activeOpacity={0.9}
       onPress={() => navigation.navigate("Player")}
       style={[
-        tw`flex-row items-center px-3 py-2`,
+        tw`flex-row items-center px-3 py-3`,
         {
           backgroundColor: theme.card,
-          borderTopWidth: 1,
-          borderTopColor: theme.border,
         },
       ]}
     >

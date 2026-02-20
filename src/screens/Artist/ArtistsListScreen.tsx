@@ -25,42 +25,22 @@ export default function ArtistsListScreen({ route, navigation }: any) {
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: theme.background }]}>
       {/* Header */}
-      <View style={tw`px-4 py-3 flex-row items-center`}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={tw`mr-4`}>
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
-        </TouchableOpacity>
-        <Text style={[tw`text-lg font-semibold`, { color: theme.text }]}>
-          All Artists
-        </Text>
-      </View>
-
-      {/* Search Bar */}
-      <View style={tw`px-4 py-2`}>
-        <View
-          style={[
-            tw`flex-row items-center px-3 py-2 rounded-lg`,
-            { backgroundColor: theme.card },
-          ]}
-        >
-          <Ionicons
-            name="search"
-            size={20}
-            color={theme.subText}
-            style={tw`mr-2`}
-          />
-          <TextInput
-            placeholder="Search artists..."
-            placeholderTextColor={theme.subText}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={[tw`flex-1 text-base`, { color: theme.text }]}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={20} color={theme.subText} />
-            </TouchableOpacity>
-          )}
+      <View style={tw`px-4 py-3`}>
+        <View style={tw`flex-row items-center mb-2`}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={tw`mr-4`}
+          >
+            <Ionicons name="arrow-back" size={24} color={theme.text} />
+          </TouchableOpacity>
+          <Text style={[tw`text-xl font-bold flex-1`, { color: theme.text }]}>
+            All Artists
+          </Text>
         </View>
+        <Text style={[tw`text-sm ml-12`, { color: theme.subText }]}>
+          {filteredArtists.length}{" "}
+          {filteredArtists.length === 1 ? "artist" : "artists"}
+        </Text>
       </View>
 
       {/* Artists List */}

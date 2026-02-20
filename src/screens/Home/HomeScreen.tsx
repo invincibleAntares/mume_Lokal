@@ -47,7 +47,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView
-      style={[tw`flex-1 pb-0`, { backgroundColor: theme.background }]}
+      style={[tw`flex-1 pb-0 mb-0`, { backgroundColor: theme.background }]}
     >
       <Header />
       <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
