@@ -55,19 +55,7 @@ export default function HomeScreen() {
           <FlatList
             data={songs}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => {
-              console.log("SONG ITEM:", item);
-              console.log("SONG IMAGES:", item.image);
-
-              return (
-                <SongRow
-                  title={item.name}
-                  artist={item.primaryArtists}
-                  image={getBestImage(item.image)}
-                  onPlay={() => console.log("Play", item.name)}
-                />
-              );
-            }}
+            renderItem={({ item }) => <SongRow song={item} />}
           />
         ))}
     </SafeAreaView>

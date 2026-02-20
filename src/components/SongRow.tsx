@@ -1,16 +1,17 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import tw from "twrnc";
 import { useTheme } from "../theme/ThemeContext";
+import { Song, useSongStore } from "../store/songStore";
+import { getBestImage } from "../utils/getImage";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { HomeStackParamList } from "../navigation/types";
 
-interface Props {
-  title: string;
-  artist: string;
-  image?: string;
-  onPlay?: () => void;
-}
-
-export default function SongRow({ title, artist, image, onPlay }: Props) {
+export default function SongRow({ song }: { song: Song }) {
   const { theme } = useTheme();
+  const setCurrentSong = useSongStore((s) => s.setCurrentSong);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   return (
     <View
@@ -19,30 +20,31 @@ export default function SongRow({ title, artist, image, onPlay }: Props) {
         { borderBottomWidth: 1, borderBottomColor: theme.border },
       ]}
     >
-      {/* Artwork */}
-      <Image
-        source={{ uri: image }}
-        style={tw`w-12 h-12 rounded-md mr-3 bg-gray-300`}
-      />
+      <TouchableOpacity
+        onPress={() => {
+          setCurrentSong(song);
+          navigation.navigate("Player");
+        }}
+      >
+        <Image
+          source={{ uri: getBestImage(song.image) }}
+          style={tw`w-12 h-12 rounded-md mr-3 bg-gray-300`}
+        />
+      </TouchableOpacity>
 
-      {/* Title + Artist */}
       <View style={tw`flex-1`}>
         <Text
           style={[tw`text-base font-medium`, { color: theme.text }]}
           numberOfLines={1}
         >
-          {title}
+          {song.name}
         </Text>
-        <Text
-          style={[tw`text-sm mt-0.5`, { color: theme.subText }]}
-          numberOfLines={1}
-        >
-          {artist}
+        <Text style={[tw`text-sm`, { color: theme.subText }]} numberOfLines={1}>
+          {song.primaryArtists}
         </Text>
       </View>
 
-      {/* Play button */}
-      <TouchableOpacity onPress={onPlay}>
+      <TouchableOpacity onPress={() => setCurrentSong(song)}>
         <Text style={[tw`text-xl`, { color: theme.primary }]}>▶️</Text>
       </TouchableOpacity>
     </View>

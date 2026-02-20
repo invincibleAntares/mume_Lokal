@@ -6,8 +6,22 @@ import HomeScreen from "../screens/Home/HomeScreen";
 import FavoritesScreen from "../screens/Favorites/FavoritesScreen";
 import PlaylistsScreen from "../screens/Playlists/PlaylistsScreen";
 import SettingsScreen from "../screens/Settings/SettingsScreen";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import PlayerScreen from "../screens/Player/PlayerScreen";
+import { HomeStackParamList } from "./types";
+
+const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 const Tab = createBottomTabNavigator();
+
+function HomeStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="HomeMain" component={HomeScreen} />
+      <Stack.Screen name="Player" component={PlayerScreen} />
+    </Stack.Navigator>
+  );
+}
 
 export default function BottomTabs() {
   const { theme } = useTheme();
@@ -26,7 +40,7 @@ export default function BottomTabs() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStack}
         options={{
           tabBarIcon: ({ color }) => (
             <Text style={{ color, fontSize: 18 }}>🏠</Text>

@@ -1,0 +1,111 @@
+import { View, Text, Image, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import tw from "twrnc";
+import { useSongStore } from "../../store/songStore";
+import { useTheme } from "../../theme/ThemeContext";
+import { getBestImage } from "../../utils/getImage";
+
+export default function PlayerScreen({ navigation }: any) {
+  const { currentSong, isPlaying, togglePlay, positionMillis, durationMillis } =
+    useSongStore();
+
+  const { theme } = useTheme();
+
+  if (!currentSong) return null;
+
+  const formatTime = (ms: number) => {
+    const totalSec = Math.floor(ms / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return `${min}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  const progress = durationMillis > 0 ? positionMillis / durationMillis : 0;
+
+  return (
+    <SafeAreaView style={[tw`flex-1`, { backgroundColor: theme.background }]}>
+      {/* Header */}
+      <View style={tw`px-4 py-3 flex-row items-center justify-between`}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={[tw`text-xl`, { color: theme.text }]}>⬇️</Text>
+        </TouchableOpacity>
+        <Text style={[tw`text-sm`, { color: theme.subText }]}>Now Playing</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      {/* Artwork */}
+      <View style={tw`items-center mt-6`}>
+        <Image
+          source={{ uri: getBestImage(currentSong.image) }}
+          style={tw`w-72 h-72 rounded-2xl bg-gray-300`}
+        />
+      </View>
+
+      {/* Song Info */}
+      <View style={tw`items-center mt-6 px-6`}>
+        <Text
+          style={[tw`text-xl font-semibold text-center`, { color: theme.text }]}
+          numberOfLines={2}
+        >
+          {currentSong.name}
+        </Text>
+        <Text style={[tw`text-sm mt-2 text-center`, { color: theme.subText }]}>
+          {currentSong.primaryArtists}
+        </Text>
+      </View>
+
+      {/* Progress Bar (UI only) */}
+      <View style={tw`px-6 mt-8`}>
+        <View style={tw`h-1 bg-gray-600 rounded-full`}>
+          <View
+            style={[
+              tw`h-1 rounded-full`,
+              {
+                width: `${progress * 100}%`,
+                backgroundColor: theme.primary,
+              },
+            ]}
+          />
+        </View>
+
+        <View style={tw`flex-row justify-between mt-2`}>
+          <Text style={[tw`text-xs`, { color: theme.subText }]}>
+            {formatTime(positionMillis)}
+          </Text>
+          <Text style={[tw`text-xs`, { color: theme.subText }]}>
+            {formatTime(durationMillis)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Controls */}
+      <View style={tw`flex-row justify-center items-center mt-10`}>
+        <TouchableOpacity>
+          <Text style={[tw`text-2xl mx-6`, { color: theme.subText }]}>🔀</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Text style={[tw`text-3xl mx-6`, { color: theme.text }]}>⏮️</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={togglePlay}
+          style={[
+            tw`mx-6 p-4 rounded-full`,
+            { backgroundColor: theme.primary },
+          ]}
+        >
+          <Text style={tw`text-white text-2xl`}>{isPlaying ? "⏸️" : "▶️"}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Text style={[tw`text-3xl mx-6`, { color: theme.text }]}>⏭️</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity>
+          <Text style={[tw`text-2xl mx-6`, { color: theme.subText }]}>🔁</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
