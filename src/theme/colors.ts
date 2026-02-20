@@ -1,5 +1,6 @@
 export const lightTheme = {
   background: "#FFFFFF",
+  card: "#F9FAFB",
   text: "#000000",
   subText: "#6B7280",
   border: "#E5E7EB",
@@ -8,6 +9,7 @@ export const lightTheme = {
 
 export const darkTheme = {
   background: "#121212",
+  card: "#121212",
   text: "#FFFFFF",
   subText: "#9CA3AF",
   border: "#374151",

@@ -1,8 +1,13 @@
 import { create } from "zustand";
 import { searchSongs } from "../api/saavn";
-import { playSound, pauseSound, resumeSound } from "../audio/audioService";
+import {
+  playSound,
+  pauseSound,
+  resumeSound,
+  seekTo,
+  setOnPlaybackStatusUpdate,
+} from "../audio/audioService";
 import { getBestAudio } from "../utils/getAudioUrl";
-import { setOnPlaybackStatusUpdate } from "../audio/audioService";
 
 /* ---------- Types ---------- */
 
@@ -22,8 +27,6 @@ export interface Song {
   primaryArtists: string;
   image: SongImage[];
   downloadUrl: SongAudio[];
-  positionMillis: number;
-  durationMillis: number;
 }
 
 interface SongState {
@@ -32,23 +35,24 @@ interface SongState {
   loading: boolean;
   fetchSongs: (query: string) => Promise<void>;
 
-  /* Player state */
+  /* Player */
   currentSong: Song | null;
   isPlaying: boolean;
-  setCurrentSong: (song: Song) => Promise<void>;
-  togglePlay: () => Promise<void>;
   positionMillis: number;
   durationMillis: number;
+
+  setCurrentSong: (song: Song) => Promise<void>;
+  togglePlay: () => Promise<void>;
+  seek: (ratio: number) => Promise<void>;
 }
 
-/* ---------- Zustand Store ---------- */
+/* ---------- Store ---------- */
 
 export const useSongStore = create<SongState>((set, get) => ({
-  /* ---------- List ---------- */
   songs: [],
   loading: false,
 
-  fetchSongs: async (query: string) => {
+  fetchSongs: async (query) => {
     set({ loading: true });
     try {
       const results = await searchSongs(query);
@@ -60,7 +64,6 @@ export const useSongStore = create<SongState>((set, get) => ({
     }
   },
 
-  /* ---------- Player ---------- */
   currentSong: null,
   isPlaying: false,
   positionMillis: 0,
@@ -97,5 +100,15 @@ export const useSongStore = create<SongState>((set, get) => ({
     }
 
     set({ isPlaying: !isPlaying });
+  },
+
+  seek: async (ratio: number) => {
+    const { durationMillis } = get();
+    if (!durationMillis) return;
+
+    const position = durationMillis * ratio;
+    await seekTo(position);
+
+    set({ positionMillis: position });
   },
 }));

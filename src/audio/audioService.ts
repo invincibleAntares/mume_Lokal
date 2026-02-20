@@ -1,11 +1,11 @@
-import { Audio } from "expo-av";
+import { Audio, AVPlaybackStatus } from "expo-av";
 
 let sound: Audio.Sound | null = null;
 
-let statusCallback: ((status: Audio.SoundStatus) => void) | null = null;
+let statusCallback: ((status: AVPlaybackStatus) => void) | null = null;
 
 export function setOnPlaybackStatusUpdate(
-  cb: (status: Audio.SoundStatus) => void
+  cb: (status: AVPlaybackStatus) => void
 ) {
   statusCallback = cb;
 }
@@ -35,4 +35,9 @@ export async function pauseSound() {
 export async function resumeSound() {
   if (!sound) return;
   await sound.playAsync();
+}
+
+export async function seekTo(positionMillis: number) {
+  if (!sound) return;
+  await sound.setPositionAsync(positionMillis);
 }

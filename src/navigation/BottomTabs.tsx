@@ -1,5 +1,8 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text } from "react-native";
+import {
+  createBottomTabNavigator,
+  BottomTabBar,
+} from "@react-navigation/bottom-tabs";
+import { Text, View } from "react-native";
 import { useTheme } from "../theme/ThemeContext";
 
 import HomeScreen from "../screens/Home/HomeScreen";
@@ -9,6 +12,7 @@ import SettingsScreen from "../screens/Settings/SettingsScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import PlayerScreen from "../screens/Player/PlayerScreen";
 import { HomeStackParamList } from "./types";
+import MiniPlayer from "../components/MiniPlayer";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -23,16 +27,27 @@ function HomeStack() {
   );
 }
 
+function CustomTabBar(props: any) {
+  return (
+    <View>
+      <MiniPlayer />
+      <BottomTabBar {...props} />
+    </View>
+  );
+}
+
 export default function BottomTabs() {
   const { theme } = useTheme();
 
   return (
     <Tab.Navigator
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
           backgroundColor: theme.background,
           borderTopColor: theme.border,
+          height: 56,
         },
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.subText,

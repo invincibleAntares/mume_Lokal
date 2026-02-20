@@ -4,10 +4,17 @@ import tw from "twrnc";
 import { useSongStore } from "../../store/songStore";
 import { useTheme } from "../../theme/ThemeContext";
 import { getBestImage } from "../../utils/getImage";
+import { Pressable } from "react-native";
 
 export default function PlayerScreen({ navigation }: any) {
-  const { currentSong, isPlaying, togglePlay, positionMillis, durationMillis } =
-    useSongStore();
+  const {
+    currentSong,
+    isPlaying,
+    togglePlay,
+    positionMillis,
+    durationMillis,
+    seek,
+  } = useSongStore();
 
   const { theme } = useTheme();
 
@@ -56,17 +63,26 @@ export default function PlayerScreen({ navigation }: any) {
 
       {/* Progress Bar (UI only) */}
       <View style={tw`px-6 mt-8`}>
-        <View style={tw`h-1 bg-gray-600 rounded-full`}>
-          <View
-            style={[
-              tw`h-1 rounded-full`,
-              {
-                width: `${progress * 100}%`,
-                backgroundColor: theme.primary,
-              },
-            ]}
-          />
-        </View>
+        <Pressable
+          onPress={(e) => {
+            const { locationX } = e.nativeEvent;
+            const barWidth = 300; // matches visual width
+            const ratio = Math.min(Math.max(locationX / barWidth, 0), 1);
+            seek(ratio);
+          }}
+        >
+          <View style={tw`h-1 bg-gray-600 rounded-full`}>
+            <View
+              style={[
+                tw`h-1 rounded-full`,
+                {
+                  width: `${progress * 100}%`,
+                  backgroundColor: theme.primary,
+                },
+              ]}
+            />
+          </View>
+        </Pressable>
 
         <View style={tw`flex-row justify-between mt-2`}>
           <Text style={[tw`text-xs`, { color: theme.subText }]}>
