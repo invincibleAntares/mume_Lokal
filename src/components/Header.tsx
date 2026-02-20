@@ -1,10 +1,12 @@
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import tw from "twrnc";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
+import { useNavigation } from "@react-navigation/native";
 
 export default function Header() {
   const { theme } = useTheme();
+  const navigation = useNavigation<any>();
 
   return (
     <View style={tw`px-4 py-4 flex-row justify-between items-center`}>
@@ -20,7 +22,9 @@ export default function Header() {
         </Text>
       </View>
 
-      <Ionicons name="search" size={24} color={theme.text} />
+      <TouchableOpacity onPress={() => navigation.navigate("Search")}>
+        <Ionicons name="search" size={24} color={theme.text} />
+      </TouchableOpacity>
     </View>
   );
 }

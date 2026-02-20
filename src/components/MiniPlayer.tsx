@@ -5,6 +5,7 @@ import { useSongStore } from "../store/songStore";
 import { useTheme } from "../theme/ThemeContext";
 import { useNavigation } from "@react-navigation/native";
 import { getBestImage } from "../utils/getImage";
+import { getPrimaryArtists } from "../utils/songHelpers";
 
 export default function MiniPlayer() {
   const { currentSong, isPlaying, togglePlay, playNext } = useSongStore();
@@ -38,7 +39,7 @@ export default function MiniPlayer() {
           numberOfLines={1}
           style={[tw`text-sm font-medium`, { color: theme.text }]}
         >
-          {currentSong.name} – {currentSong.primaryArtists}
+          {currentSong.name} – {getPrimaryArtists(currentSong)}
         </Text>
       </View>
 

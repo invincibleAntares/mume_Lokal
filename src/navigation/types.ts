@@ -1,4 +1,19 @@
+import { Artist, Song } from "../store/songStore";
+
 export type HomeStackParamList = {
   HomeMain: undefined;
+
   Player: undefined;
+
+  SongList: {
+    title: string;
+    songs: Song[];
+  };
+  ArtistDetail: {
+    artist: Artist;
+  };
+  ArtistsList: {
+    artists: Artist[];
+  };
+  Search: undefined;
 };

@@ -3,15 +3,19 @@ import tw from "twrnc";
 import { useTheme } from "../theme/ThemeContext";
 import { Song, useSongStore } from "../store/songStore";
 import { getBestImage } from "../utils/getImage";
+import { getPrimaryArtists } from "../utils/songHelpers";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/types";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function SongRow({ song }: { song: Song }) {
   const { theme } = useTheme();
-  const setCurrentSong = useSongStore((s) => s.setCurrentSong);
+  const { setCurrentSong, currentSong, isPlaying } = useSongStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+
+  const isCurrentSong = currentSong?.id === song.id;
 
   return (
     <View
@@ -40,12 +44,16 @@ export default function SongRow({ song }: { song: Song }) {
           {song.name}
         </Text>
         <Text style={[tw`text-sm`, { color: theme.subText }]} numberOfLines={1}>
-          {song.primaryArtists}
+          {getPrimaryArtists(song)}
         </Text>
       </View>
 
       <TouchableOpacity onPress={() => setCurrentSong(song)}>
-        <Text style={[tw`text-xl`, { color: theme.primary }]}>▶️</Text>
+        <Ionicons
+          name={isCurrentSong && isPlaying ? "pause" : "play"}
+          size={24}
+          color={theme.primary}
+        />
       </TouchableOpacity>
     </View>
   );

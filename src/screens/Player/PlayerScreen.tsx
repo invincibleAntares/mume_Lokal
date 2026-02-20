@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSongStore } from "../../store/songStore";
 import { useTheme } from "../../theme/ThemeContext";
 import { getBestImage } from "../../utils/getImage";
+import { getPrimaryArtists } from "../../utils/songHelpers";
 import { Pressable } from "react-native";
 
 export default function PlayerScreen({ navigation }: any) {
@@ -60,7 +61,7 @@ export default function PlayerScreen({ navigation }: any) {
           {currentSong.name}
         </Text>
         <Text style={[tw`text-sm mt-2 text-center`, { color: theme.subText }]}>
-          {currentSong.primaryArtists}
+          {getPrimaryArtists(currentSong)}
         </Text>
       </View>
 

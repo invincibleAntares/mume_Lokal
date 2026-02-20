@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { searchSongs } from "../api/saavn";
 import {
   playSound,
@@ -25,11 +26,31 @@ export interface SongAudio {
   url: string;
 }
 
+export interface Artist {
+  id: string;
+  name: string;
+  image?: SongImage[];
+}
+
+export interface Album {
+  id: string;
+  name: string;
+  url?: string;
+}
+
 export interface Song {
   id: string;
   name: string;
-  primaryArtists: string;
-  image: SongImage[];
+  duration?: number;
+  language?: string;
+  album?: Album;
+  artists?: {
+    primary: Artist[];
+    featured?: Artist[];
+    all?: Artist[];
+  };
+  primaryArtists?: string; // Legacy support for old format
+  image?: SongImage[];
   downloadUrl: SongAudio[];
 }
 
@@ -45,6 +66,7 @@ interface SongState {
   isPlaying: boolean;
   positionMillis: number;
   durationMillis: number;
+  recentlyPlayed: Song[];
 
   setCurrentSong: (song: Song) => Promise<void>;
   togglePlay: () => Promise<void>;
@@ -53,6 +75,7 @@ interface SongState {
   seek: (ratio: number) => Promise<void>;
 
   hydratePlayer: () => Promise<void>;
+  hydrateRecentlyPlayed: () => Promise<void>;
   resumeCurrentSong: () => Promise<void>;
 }
 
@@ -69,6 +92,7 @@ export const useSongStore = create<SongState>((set, get) => ({
   isPlaying: false,
   positionMillis: 0,
   durationMillis: 1,
+  recentlyPlayed: [],
 
   fetchSongs: async (query) => {
     set({ loading: true });
@@ -107,13 +131,21 @@ export const useSongStore = create<SongState>((set, get) => ({
     await playSound(url);
     await saveLastPlayedSong(song, index);
 
+    const { recentlyPlayed } = get();
+    const updatedRecent = [
+      song,
+      ...recentlyPlayed.filter((s: Song) => s.id !== song.id),
+    ].slice(0, 10);
+
     set({
       currentSong: song,
       currentIndex: index,
       isPlaying: true,
       positionMillis: 0,
       durationMillis: 1,
+      recentlyPlayed: updatedRecent,
     });
+    AsyncStorage.setItem("recentlyPlayed", JSON.stringify(updatedRecent));
   },
 
   togglePlay: async () => {
@@ -158,8 +190,22 @@ export const useSongStore = create<SongState>((set, get) => ({
     });
 
     if (get().songs.length === 0) {
-      await get().fetchSongs(song.primaryArtists.split(",")[0]);
+      // Support both old and new API format
+      const artistName =
+        song.artists?.primary?.[0]?.name ||
+        song.primaryArtists?.split(",")[0] ||
+        "arijit";
+      await get().fetchSongs(artistName);
     }
+  },
+  hydrateRecentlyPlayed: async () => {
+    const raw = await AsyncStorage.getItem("recentlyPlayed");
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw);
+      set({ recentlyPlayed: parsed });
+    } catch {}
   },
 
   seek: async (ratio: number) => {
