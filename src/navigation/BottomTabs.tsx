@@ -1,8 +1,10 @@
 import {
   createBottomTabNavigator,
   BottomTabBar,
+  BottomTabBarProps,
 } from "@react-navigation/bottom-tabs";
 import { Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeContext";
 
 import HomeScreen from "../screens/Home/HomeScreen";
@@ -13,6 +15,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import PlayerScreen from "../screens/Player/PlayerScreen";
 import { HomeStackParamList } from "./types";
 import MiniPlayer from "../components/MiniPlayer";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -22,15 +25,32 @@ function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeMain" component={HomeScreen} />
-      <Stack.Screen name="Player" component={PlayerScreen} />
+
+      {/* Full Player as modal */}
+      <Stack.Screen
+        name="Player"
+        component={PlayerScreen}
+        options={{
+          presentation: "modal",
+          animation: "slide_from_bottom",
+        }}
+      />
     </Stack.Navigator>
   );
 }
 
-function CustomTabBar(props: any) {
+function CustomTabBar(props: BottomTabBarProps) {
+  const { state } = props;
+
+  const currentRoute = state.routes[state.index];
+  const focusedRouteName =
+    getFocusedRouteNameFromRoute(currentRoute) ?? currentRoute.name;
+
+  const hideMiniPlayer = focusedRouteName === "Player";
+
   return (
     <View>
-      <MiniPlayer />
+      {!hideMiniPlayer && <MiniPlayer />}
       <BottomTabBar {...props} />
     </View>
   );
@@ -58,7 +78,7 @@ export default function BottomTabs() {
         component={HomeStack}
         options={{
           tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 18 }}>🏠</Text>
+            <Ionicons name="home" size={24} color={color} />
           ),
         }}
       />
@@ -67,7 +87,7 @@ export default function BottomTabs() {
         component={FavoritesScreen}
         options={{
           tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 18 }}>❤️</Text>
+            <Ionicons name="heart" size={24} color={color} />
           ),
         }}
       />
@@ -76,7 +96,7 @@ export default function BottomTabs() {
         component={PlaylistsScreen}
         options={{
           tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 18 }}>📄</Text>
+            <Ionicons name="list" size={24} color={color} />
           ),
         }}
       />
@@ -85,7 +105,7 @@ export default function BottomTabs() {
         component={SettingsScreen}
         options={{
           tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 18 }}>⚙️</Text>
+            <Ionicons name="settings" size={24} color={color} />
           ),
         }}
       />

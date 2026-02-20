@@ -8,6 +8,10 @@ import {
   setOnPlaybackStatusUpdate,
 } from "../audio/audioService";
 import { getBestAudio } from "../utils/getAudioUrl";
+import {
+  saveLastPlayedSong,
+  loadLastPlayedSong,
+} from "../storage/playerStorage";
 
 /* ---------- Types ---------- */
 
@@ -37,40 +41,142 @@ interface SongState {
 
   /* Player */
   currentSong: Song | null;
+  currentIndex: number;
   isPlaying: boolean;
   positionMillis: number;
   durationMillis: number;
 
   setCurrentSong: (song: Song) => Promise<void>;
   togglePlay: () => Promise<void>;
+  playNext: () => Promise<void>;
+  playPrevious: () => Promise<void>;
   seek: (ratio: number) => Promise<void>;
+
+  hydratePlayer: () => Promise<void>;
+  resumeCurrentSong: () => Promise<void>;
 }
 
 /* ---------- Store ---------- */
 
 export const useSongStore = create<SongState>((set, get) => ({
+  /* ---------- List ---------- */
   songs: [],
   loading: false,
+
+  /* ---------- Player ---------- */
+  currentSong: null,
+  currentIndex: -1,
+  isPlaying: false,
+  positionMillis: 0,
+  durationMillis: 1,
 
   fetchSongs: async (query) => {
     set({ loading: true });
     try {
       const results = await searchSongs(query);
       set({ songs: results });
-    } catch (e) {
-      console.error("Failed to fetch songs", e);
     } finally {
       set({ loading: false });
     }
   },
 
-  currentSong: null,
-  isPlaying: false,
-  positionMillis: 0,
-  durationMillis: 1,
-
   setCurrentSong: async (song) => {
+    const { songs } = get();
+    const index = songs.findIndex((s) => s.id === song.id);
+    if (index === -1) return;
+
     const url = getBestAudio(song.downloadUrl);
+    if (!url) return;
+
+    // Attach playback listener ONCE per song
+    setOnPlaybackStatusUpdate((status) => {
+      if (!status.isLoaded) return;
+
+      // ⏭️ Auto-play next when song finishes
+      if (status.didJustFinish) {
+        get().playNext();
+        return;
+      }
+
+      set({
+        positionMillis: status.positionMillis ?? 0,
+        durationMillis: status.durationMillis ?? 1,
+      });
+    });
+
+    await playSound(url);
+    await saveLastPlayedSong(song, index);
+
+    set({
+      currentSong: song,
+      currentIndex: index,
+      isPlaying: true,
+      positionMillis: 0,
+      durationMillis: 1,
+    });
+  },
+
+  togglePlay: async () => {
+    const { isPlaying, currentSong } = get();
+
+    if (!currentSong) return;
+
+    if (!isPlaying) {
+      // If audio was never loaded (app restart)
+      await get().resumeCurrentSong();
+      return;
+    }
+
+    await pauseSound();
+    set({ isPlaying: !isPlaying });
+  },
+
+  playNext: async () => {
+    const { songs, currentIndex } = get();
+    if (currentIndex + 1 >= songs.length) return;
+
+    await get().setCurrentSong(songs[currentIndex + 1]);
+  },
+
+  playPrevious: async () => {
+    const { songs, currentIndex } = get();
+    if (currentIndex - 1 < 0) return;
+
+    await get().setCurrentSong(songs[currentIndex - 1]);
+  },
+
+  hydratePlayer: async () => {
+    const { song, index } = await loadLastPlayedSong();
+    if (!song || index === -1) return;
+
+    set({
+      currentSong: song,
+      currentIndex: index,
+      isPlaying: false, // ❌ don’t auto play
+      positionMillis: 0,
+      durationMillis: 1,
+    });
+
+    if (get().songs.length === 0) {
+      await get().fetchSongs(song.primaryArtists.split(",")[0]);
+    }
+  },
+
+  seek: async (ratio: number) => {
+    const { durationMillis } = get();
+    if (!durationMillis) return;
+
+    const position = durationMillis * ratio;
+    await seekTo(position);
+
+    set({ positionMillis: position });
+  },
+
+  resumeCurrentSong: async () => {
+    const { currentSong, isPlaying } = get();
+    if (!currentSong || isPlaying) return;
+
+    const url = getBestAudio(currentSong.downloadUrl);
     if (!url) return;
 
     setOnPlaybackStatusUpdate((status) => {
@@ -84,31 +190,6 @@ export const useSongStore = create<SongState>((set, get) => ({
 
     await playSound(url);
 
-    set({
-      currentSong: song,
-      isPlaying: true,
-    });
-  },
-
-  togglePlay: async () => {
-    const { isPlaying } = get();
-
-    if (isPlaying) {
-      await pauseSound();
-    } else {
-      await resumeSound();
-    }
-
-    set({ isPlaying: !isPlaying });
-  },
-
-  seek: async (ratio: number) => {
-    const { durationMillis } = get();
-    if (!durationMillis) return;
-
-    const position = durationMillis * ratio;
-    await seekTo(position);
-
-    set({ positionMillis: position });
+    set({ isPlaying: true });
   },
 }));

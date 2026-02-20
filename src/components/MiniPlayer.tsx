@@ -1,12 +1,13 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import tw from "twrnc";
+import { Ionicons } from "@expo/vector-icons";
 import { useSongStore } from "../store/songStore";
 import { useTheme } from "../theme/ThemeContext";
 import { useNavigation } from "@react-navigation/native";
 import { getBestImage } from "../utils/getImage";
 
 export default function MiniPlayer() {
-  const { currentSong, isPlaying, togglePlay } = useSongStore();
+  const { currentSong, isPlaying, togglePlay, playNext } = useSongStore();
   const { theme } = useTheme();
   const navigation = useNavigation<any>();
 
@@ -50,19 +51,20 @@ export default function MiniPlayer() {
           }}
           style={tw`px-2`}
         >
-          <Text style={[tw`text-xl`, { color: theme.primary }]}>
-            {isPlaying ? "⏸️" : "▶️"}
-          </Text>
+          <Ionicons
+            name={isPlaying ? "pause" : "play"}
+            size={24}
+            color={theme.primary}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={(e) => {
             e.stopPropagation();
-            // next song later
+            playNext();
           }}
-          style={tw`px-2`}
         >
-          <Text style={[tw`text-lg`, { color: theme.primary }]}>⏭️</Text>
+          <Ionicons name="play-skip-forward" size={24} color={theme.text} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>

@@ -4,6 +4,13 @@ let sound: Audio.Sound | null = null;
 
 let statusCallback: ((status: AVPlaybackStatus) => void) | null = null;
 
+Audio.setAudioModeAsync({
+  allowsRecordingIOS: false,
+  staysActiveInBackground: true, // ✅ background playback
+  playsInSilentModeIOS: true,
+  shouldDuckAndroid: true,
+});
+
 export function setOnPlaybackStatusUpdate(
   cb: (status: AVPlaybackStatus) => void
 ) {

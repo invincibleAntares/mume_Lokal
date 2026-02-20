@@ -1,6 +1,7 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "twrnc";
+import { Ionicons } from "@expo/vector-icons";
 import { useSongStore } from "../../store/songStore";
 import { useTheme } from "../../theme/ThemeContext";
 import { getBestImage } from "../../utils/getImage";
@@ -14,6 +15,8 @@ export default function PlayerScreen({ navigation }: any) {
     positionMillis,
     durationMillis,
     seek,
+    playPrevious,
+    playNext,
   } = useSongStore();
 
   const { theme } = useTheme();
@@ -34,7 +37,7 @@ export default function PlayerScreen({ navigation }: any) {
       {/* Header */}
       <View style={tw`px-4 py-3 flex-row items-center justify-between`}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={[tw`text-xl`, { color: theme.text }]}>⬇️</Text>
+          <Ionicons name="chevron-down" size={28} color={theme.text} />
         </TouchableOpacity>
         <Text style={[tw`text-sm`, { color: theme.subText }]}>Now Playing</Text>
         <View style={{ width: 24 }} />
@@ -97,11 +100,11 @@ export default function PlayerScreen({ navigation }: any) {
       {/* Controls */}
       <View style={tw`flex-row justify-center items-center mt-10`}>
         <TouchableOpacity>
-          <Text style={[tw`text-2xl mx-6`, { color: theme.subText }]}>🔀</Text>
+          <Ionicons name="shuffle" size={28} color={theme.subText} />
         </TouchableOpacity>
 
-        <TouchableOpacity>
-          <Text style={[tw`text-3xl mx-6`, { color: theme.text }]}>⏮️</Text>
+        <TouchableOpacity onPress={playPrevious}>
+          <Ionicons name="play-skip-back" size={36} color={theme.text} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -111,15 +114,18 @@ export default function PlayerScreen({ navigation }: any) {
             { backgroundColor: theme.primary },
           ]}
         >
-          <Text style={tw`text-white text-2xl`}>{isPlaying ? "⏸️" : "▶️"}</Text>
+          <Ionicons
+            name={isPlaying ? "pause" : "play"}
+            size={32}
+            color="white"
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={playNext}>
+          <Ionicons name="play-skip-forward" size={36} color={theme.text} />
         </TouchableOpacity>
 
         <TouchableOpacity>
-          <Text style={[tw`text-3xl mx-6`, { color: theme.text }]}>⏭️</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity>
-          <Text style={[tw`text-2xl mx-6`, { color: theme.subText }]}>🔁</Text>
+          <Ionicons name="repeat" size={28} color={theme.subText} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
