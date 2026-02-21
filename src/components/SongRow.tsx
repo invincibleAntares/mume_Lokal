@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
 import tw from "twrnc";
 import { useTheme } from "../theme/ThemeContext";
 import { Song, useSongStore } from "../store/songStore";
@@ -8,14 +8,21 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/types";
 import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 
 export default function SongRow({ song }: { song: Song }) {
   const { theme } = useTheme();
-  const { setCurrentSong, currentSong, isPlaying } = useSongStore();
+  const { setCurrentSong, currentSong, isPlaying, addToQueue } = useSongStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const [showMenu, setShowMenu] = useState(false);
 
   const isCurrentSong = currentSong?.id === song.id;
+
+  const handleAddToQueue = () => {
+    addToQueue(song);
+    setShowMenu(false);
+  };
 
   return (
     <View
@@ -48,13 +55,84 @@ export default function SongRow({ song }: { song: Song }) {
         </Text>
       </View>
 
-      <TouchableOpacity onPress={() => setCurrentSong(song)}>
+      <TouchableOpacity onPress={() => setCurrentSong(song)} style={tw`mr-3`}>
         <Ionicons
           name={isCurrentSong && isPlaying ? "pause" : "play"}
           size={24}
           color={theme.primary}
         />
       </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setShowMenu(true)}>
+        <Ionicons name="ellipsis-vertical" size={20} color={theme.subText} />
+      </TouchableOpacity>
+
+      {/* Menu Modal */}
+      <Modal
+        visible={showMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMenu(false)}
+      >
+        <TouchableOpacity
+          style={tw`flex-1 bg-black bg-opacity-50`}
+          activeOpacity={1}
+          onPress={() => setShowMenu(false)}
+        >
+          <View style={tw`flex-1 justify-end`}>
+            <View
+              style={[tw`rounded-t-3xl p-4`, { backgroundColor: theme.card }]}
+            >
+              <View style={tw`flex-row items-center mb-4 px-2`}>
+                <Image
+                  source={{ uri: getBestImage(song.image) }}
+                  style={tw`w-14 h-14 rounded mr-3`}
+                />
+                <View style={tw`flex-1`}>
+                  <Text
+                    style={[tw`text-base font-semibold`, { color: theme.text }]}
+                    numberOfLines={1}
+                  >
+                    {song.name}
+                  </Text>
+                  <Text
+                    style={[tw`text-sm mt-1`, { color: theme.subText }]}
+                    numberOfLines={1}
+                  >
+                    {getPrimaryArtists(song)}
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={handleAddToQueue}
+                style={[
+                  tw`flex-row items-center p-4 rounded-lg`,
+                  { backgroundColor: theme.background },
+                ]}
+              >
+                <Ionicons
+                  name="add-circle-outline"
+                  size={24}
+                  color={theme.text}
+                />
+                <Text style={[tw`text-base ml-4`, { color: theme.text }]}>
+                  Add to Queue
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setShowMenu(false)}
+                style={tw`mt-4 p-4 items-center`}
+              >
+                <Text style={[tw`text-base`, { color: theme.subText }]}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

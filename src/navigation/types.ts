@@ -4,6 +4,7 @@ export type HomeStackParamList = {
   HomeMain: undefined;
 
   Player: undefined;
+  Queue: undefined;
 
   SongList: {
     title: string;

@@ -72,9 +72,7 @@ interface SongState {
   queue: Song[];
   addToQueue: (song: Song) => void;
   removeFromQueue: (songId: string) => void;
-  reorderQueue: (fromIndex: number, toIndex: number) => void;
   clearQueue: () => void;
-  playFromQueue: (index: number) => Promise<void>;
 
   setCurrentSong: (song: Song) => Promise<void>;
   togglePlay: () => Promise<void>;
@@ -108,44 +106,20 @@ export const useSongStore = create<SongState>((set, get) => ({
 
   addToQueue: (song) => {
     const { queue } = get();
-    const updatedQueue = [...queue, song];
-    set({ queue: updatedQueue });
-    AsyncStorage.setItem("queue", JSON.stringify(updatedQueue));
+    set({ queue: [...queue, song] });
+    AsyncStorage.setItem("queue", JSON.stringify([...queue, song]));
   },
 
   removeFromQueue: (songId) => {
     const { queue } = get();
-    const updatedQueue = queue.filter((s) => s.id !== songId);
-    set({ queue: updatedQueue });
-    AsyncStorage.setItem("queue", JSON.stringify(updatedQueue));
-  },
-
-  reorderQueue: (fromIndex, toIndex) => {
-    const { queue } = get();
-    const updatedQueue = [...queue];
-    const [removed] = updatedQueue.splice(fromIndex, 1);
-    updatedQueue.splice(toIndex, 0, removed);
-    set({ queue: updatedQueue });
-    AsyncStorage.setItem("queue", JSON.stringify(updatedQueue));
+    const updated = queue.filter((s) => s.id !== songId);
+    set({ queue: updated });
+    AsyncStorage.setItem("queue", JSON.stringify(updated));
   },
 
   clearQueue: () => {
     set({ queue: [] });
     AsyncStorage.removeItem("queue");
-  },
-
-  playFromQueue: async (index) => {
-    const { queue } = get();
-    if (index < 0 || index >= queue.length) return;
-
-    const song = queue[index];
-    // Remove from queue after playing
-    const updatedQueue = queue.filter((_, i) => i !== index);
-    set({ queue: updatedQueue });
-    AsyncStorage.setItem("queue", JSON.stringify(updatedQueue));
-
-    // Play the song
-    await get().setCurrentSong(song);
   },
 
   fetchSongs: async (query) => {
@@ -219,14 +193,15 @@ export const useSongStore = create<SongState>((set, get) => ({
 
   playNext: async () => {
     const { songs, currentIndex, queue } = get();
-    
-    // If there's a queue, play from queue first
+
+    // Play from queue first if available
     if (queue.length > 0) {
-      await get().playFromQueue(0);
+      const nextSong = queue[0];
+      get().removeFromQueue(nextSong.id);
+      await get().setCurrentSong(nextSong);
       return;
     }
 
-    // Otherwise play next from songs list
     if (currentIndex + 1 >= songs.length) return;
     await get().setCurrentSong(songs[currentIndex + 1]);
   },

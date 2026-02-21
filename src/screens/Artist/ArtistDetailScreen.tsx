@@ -21,7 +21,7 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
   const { theme } = useTheme();
   const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { setCurrentSong } = useSongStore();
+  const { setCurrentSong, currentSong, isPlaying, togglePlay } = useSongStore();
 
   useEffect(() => {
     loadArtistSongs();
@@ -43,9 +43,19 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
   const playAll = () => {
     if (songs.length > 0) {
       useSongStore.setState({ songs });
-      setCurrentSong(songs[0]);
+      const firstSong = songs[0];
+      // If first song is already playing, toggle it
+      if (currentSong?.id === firstSong.id) {
+        togglePlay();
+      } else {
+        setCurrentSong(firstSong);
+      }
     }
   };
+
+  // Check if any song from this artist is currently playing
+  const isArtistPlaying =
+    currentSong && songs.some((s) => s.id === currentSong.id) && isPlaying;
 
   const ListHeader = () => (
     <View style={tw`mb-4`}>
@@ -103,9 +113,14 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
                 { backgroundColor: theme.primary }, // Matches the orange button style
               ]}
             >
-              <Ionicons name="play" size={24} color="white" style={tw`mr-2`} />
+              <Ionicons
+                name={isArtistPlaying ? "pause" : "play"}
+                size={24}
+                color="white"
+                style={tw`mr-2`}
+              />
               <Text style={tw`text-white font-bold text-lg tracking-wide`}>
-                Play
+                {isArtistPlaying ? "Pause" : "Play"}
               </Text>
             </TouchableOpacity>
           </View>

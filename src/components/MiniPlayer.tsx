@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, Pressable } from "react-native";
 import tw from "twrnc";
 import { Ionicons } from "@expo/vector-icons";
 import { useSongStore } from "../store/songStore";
@@ -15,8 +15,8 @@ export default function MiniPlayer() {
   if (!currentSong) return null;
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.9}
+    <Pressable
+      // activeOpacity={0.9}
       onPress={() => navigation.navigate("Player")}
       style={[
         tw`flex-row items-center px-3 py-3`,
@@ -66,6 +66,6 @@ export default function MiniPlayer() {
           <Ionicons name="play-skip-forward" size={24} color={theme.text} />
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

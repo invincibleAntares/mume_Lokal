@@ -11,6 +11,7 @@ function Bootstrap() {
   useEffect(() => {
     hydratePlayer();
     useSongStore.getState().hydrateRecentlyPlayed();
+    useSongStore.getState().hydrateQueue();
   }, []);
 
   return null;

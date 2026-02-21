@@ -20,6 +20,7 @@ import SongListScreen from "../screens/SeeAll/SongListScreen";
 import ArtistDetailScreen from "../screens/Artist/ArtistDetailScreen";
 import ArtistsListScreen from "../screens/Artist/ArtistsListScreen";
 import SearchScreen from "../screens/Search/SearchScreen";
+import QueueScreen from "../screens/Queue/QueueScreen";
 import tw from "twrnc";
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -39,7 +40,8 @@ function HomeStack() {
           animation: "slide_from_bottom",
         }}
       />
-
+      <Stack.Screen name="Queue" component={QueueScreen} />
+      <Stack.Screen name="SongList" component={SongListScreen} />
       <Stack.Screen name="ArtistDetail" component={ArtistDetailScreen} />
       <Stack.Screen name="ArtistsList" component={ArtistsListScreen} />
       <Stack.Screen name="Search" component={SearchScreen} />
@@ -57,13 +59,12 @@ function CustomTabBar(props: BottomTabBarProps) {
   const hideMiniPlayer = focusedRouteName === "Player";
 
   return (
-    <View style={tw`relative`}>
+    <View style={tw`mt-[-35]`}>
       {!hideMiniPlayer && (
         <View
           style={[
-            tw`absolute left-0 right-0 mx-0 mb-2 rounded-lg overflow-hidden`,
+            tw`rounded-lg overflow-hidden mx-0`,
             {
-              bottom: 60,
               shadowColor: "#000",
               shadowOffset: { width: 0, height: -2 },
               shadowOpacity: 0.25,
