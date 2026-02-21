@@ -4,6 +4,9 @@ let sound: Audio.Sound | null = null;
 let currentUri: string | null = null;
 let statusCallback: ((status: AVPlaybackStatus) => void) | null = null;
 
+/** Ensures only one playSound runs at a time so no two audios overlap. */
+let playSoundQueue: Promise<void> = Promise.resolve();
+
 Audio.setAudioModeAsync({
   allowsRecordingIOS: false,
   staysActiveInBackground: true,
@@ -27,22 +30,31 @@ export async function resumeSoundIfCurrent(url: string): Promise<boolean> {
 }
 
 export async function playSound(url: string) {
-  if (sound) {
-    await sound.unloadAsync();
-    sound = null;
-    currentUri = null;
-  }
+  const prev = playSoundQueue;
+  let resolveNext!: () => void;
+  playSoundQueue = new Promise<void>((r) => { resolveNext = r; });
+  await prev;
 
-  const { sound: newSound } = await Audio.Sound.createAsync(
-    { uri: url },
-    { shouldPlay: true },
-    (status) => {
-      statusCallback?.(status);
+  try {
+    if (sound) {
+      await sound.unloadAsync();
+      sound = null;
+      currentUri = null;
     }
-  );
 
-  sound = newSound;
-  currentUri = url;
+    const { sound: newSound } = await Audio.Sound.createAsync(
+      { uri: url },
+      { shouldPlay: true },
+      (status) => {
+        statusCallback?.(status);
+      }
+    );
+
+    sound = newSound;
+    currentUri = url;
+  } finally {
+    resolveNext();
+  }
 }
 
 export async function pauseSound() {
