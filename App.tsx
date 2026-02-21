@@ -5,11 +5,13 @@ import AppNavigator from "./src/navigation/AppNavigator";
 import { useEffect } from "react";
 import { useSongStore } from "./src/store/songStore";
 import { useOfflineStore } from "./src/store/offlineStore";
+import { setupNotifications } from "./src/notification/nowPlayingNotification";
 
 function Bootstrap() {
   const hydratePlayer = useSongStore((s) => s.hydratePlayer);
 
   useEffect(() => {
+    setupNotifications();
     hydratePlayer();
     useSongStore.getState().hydrateRecentlyPlayed();
     useSongStore.getState().hydrateQueue();

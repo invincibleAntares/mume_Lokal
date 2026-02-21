@@ -4,7 +4,7 @@ import { searchSongs } from "../api/saavn";
 import {
   playSound,
   pauseSound,
-  resumeSound,
+  resumeSoundIfCurrent,
   seekTo,
   setOnPlaybackStatusUpdate,
 } from "../audio/audioService";
@@ -430,7 +430,19 @@ export const useSongStore = create<SongState>((set, get) => ({
       });
     });
 
+    const resumed = await resumeSoundIfCurrent(url);
+    if (resumed) {
+      set({ isPlaying: true });
+      showNowPlaying(
+        getSongDisplayName(currentSong),
+        getPrimaryArtists(currentSong)
+      );
+      return;
+    }
+
     await playSound(url);
+    const { positionMillis } = get();
+    if (positionMillis > 0) await seekTo(positionMillis);
     set({ isPlaying: true });
     showNowPlaying(
       getSongDisplayName(currentSong),
