@@ -9,10 +9,15 @@ import {
   setOnPlaybackStatusUpdate,
 } from "../audio/audioService";
 import { getBestAudio } from "../utils/getAudioUrl";
+import { getSongDisplayName, getPrimaryArtists } from "../utils/songHelpers";
 import {
   saveLastPlayedSong,
   loadLastPlayedSong,
 } from "../storage/playerStorage";
+import {
+  showNowPlaying,
+  clearNowPlaying,
+} from "../notification/nowPlayingNotification";
 
 /* ---------- Types ---------- */
 
@@ -145,16 +150,12 @@ export const useSongStore = create<SongState>((set, get) => ({
     const url = getBestAudio(song.downloadUrl);
     if (!url) return;
 
-    // Attach playback listener ONCE per song
     setOnPlaybackStatusUpdate((status) => {
       if (!status.isLoaded) return;
-
-      // ⏭️ Auto-play next when song finishes
       if (status.didJustFinish) {
         get().playNext();
         return;
       }
-
       set({
         positionMillis: status.positionMillis ?? 0,
         durationMillis: status.durationMillis ?? 1,
@@ -179,6 +180,8 @@ export const useSongStore = create<SongState>((set, get) => ({
       recentlyPlayed: updatedRecent,
     });
     AsyncStorage.setItem("recentlyPlayed", JSON.stringify(updatedRecent));
+
+    showNowPlaying(getSongDisplayName(song), getPrimaryArtists(song));
   },
 
   togglePlay: async () => {
@@ -187,13 +190,13 @@ export const useSongStore = create<SongState>((set, get) => ({
     if (!currentSong) return;
 
     if (!isPlaying) {
-      // If audio was never loaded (app restart)
       await get().resumeCurrentSong();
       return;
     }
 
     await pauseSound();
-    set({ isPlaying: !isPlaying });
+    set({ isPlaying: false });
+    clearNowPlaying();
   },
 
   playNext: async () => {
@@ -265,7 +268,6 @@ export const useSongStore = create<SongState>((set, get) => ({
 
     const position = durationMillis * ratio;
     await seekTo(position);
-
     set({ positionMillis: position });
   },
 
@@ -278,7 +280,6 @@ export const useSongStore = create<SongState>((set, get) => ({
 
     setOnPlaybackStatusUpdate((status) => {
       if (!status.isLoaded) return;
-
       set({
         positionMillis: status.positionMillis ?? 0,
         durationMillis: status.durationMillis ?? 1,
@@ -286,7 +287,10 @@ export const useSongStore = create<SongState>((set, get) => ({
     });
 
     await playSound(url);
-
     set({ isPlaying: true });
+    showNowPlaying(
+      getSongDisplayName(currentSong),
+      getPrimaryArtists(currentSong)
+    );
   },
 }));

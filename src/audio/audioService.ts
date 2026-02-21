@@ -1,12 +1,11 @@
 import { Audio, AVPlaybackStatus } from "expo-av";
 
 let sound: Audio.Sound | null = null;
-
 let statusCallback: ((status: AVPlaybackStatus) => void) | null = null;
 
 Audio.setAudioModeAsync({
   allowsRecordingIOS: false,
-  staysActiveInBackground: true, // ✅ background playback
+  staysActiveInBackground: true,
   playsInSilentModeIOS: true,
   shouldDuckAndroid: true,
 });
