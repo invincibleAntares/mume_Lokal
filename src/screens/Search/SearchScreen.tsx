@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,25 +15,39 @@ import { searchSongs } from "../../api/saavn";
 import SongRow from "../../components/SongRow";
 import { useSongStore } from "../../store/songStore";
 
+const PAGE_SIZE = 20;
+
 export default function SearchScreen({ navigation }: any) {
   const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
       setResults([]);
+      setTotal(0);
+      setPage(0);
       setLoading(false);
+      setLoadingMore(false);
       return;
     }
 
     setLoading(true);
+    setPage(0);
     const delaySearch = setTimeout(async () => {
       try {
-        const searchResults = await searchSongs(searchQuery);
+        const { results: searchResults, total: totalCount } = await searchSongs(
+          searchQuery,
+          0,
+          PAGE_SIZE
+        );
         setResults(searchResults);
-        // Update store so songs can be played with next/prev functionality
+        setTotal(totalCount);
+        setPage(0);
         if (searchResults.length > 0) {
           useSongStore.setState({ songs: searchResults });
         }
@@ -46,6 +60,38 @@ export default function SearchScreen({ navigation }: any) {
 
     return () => clearTimeout(delaySearch);
   }, [searchQuery]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || results.length >= total || searchQuery.trim().length < 2)
+      return;
+    const queryAtStart = searchQuery;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const { results: nextResults, total: totalCount } = await searchSongs(
+        queryAtStart,
+        nextPage,
+        PAGE_SIZE
+      );
+      // Ignore if user changed search before this request finished
+      if (queryAtStart !== searchQuery) return;
+      setResults((prev) => {
+        const existingIds = new Set(prev.map((r) => r.id));
+        const newItems = nextResults.filter((r) => !existingIds.has(r.id));
+        const combined = [...prev, ...newItems];
+        if (combined.length > 0) {
+          useSongStore.setState({ songs: combined });
+        }
+        return combined;
+      });
+      setTotal(totalCount);
+      setPage(nextPage);
+    } catch (error) {
+      console.error("Search load more failed:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [searchQuery, page, results, total, loadingMore]);
 
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: theme.background }]}>
@@ -85,13 +131,22 @@ export default function SearchScreen({ navigation }: any) {
       </View>
 
       {/* Results */}
-      {loading ? (
+      {loading && results.length === 0 ? (
         <ActivityIndicator style={tw`mt-10`} size="large" />
       ) : results.length > 0 ? (
         <FlatList
           data={results}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <SongRow song={item} />}
+          onEndReached={() => loadMore()}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={tw`py-4 items-center`}>
+                <ActivityIndicator size="small" />
+              </View>
+            ) : null
+          }
         />
       ) : searchQuery.length >= 2 ? (
         <View style={tw`flex-1 items-center justify-center px-6`}>

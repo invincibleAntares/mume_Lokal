@@ -63,7 +63,12 @@ interface SongState {
   /* Song list */
   songs: Song[];
   loading: boolean;
-  fetchSongs: (query: string) => Promise<void>;
+  loadingMore: boolean;
+  currentQuery: string;
+  currentPage: number;
+  totalSongs: number;
+  fetchSongs: (query: string, page?: number) => Promise<void>;
+  loadMoreSongs: () => Promise<void>;
 
   /* Player */
   currentSong: Song | null;
@@ -98,6 +103,10 @@ export const useSongStore = create<SongState>((set, get) => ({
   /* ---------- List ---------- */
   songs: [],
   loading: false,
+  loadingMore: false,
+  currentQuery: "",
+  currentPage: 0,
+  totalSongs: 0,
 
   /* ---------- Player ---------- */
   currentSong: null,
@@ -138,14 +147,45 @@ export const useSongStore = create<SongState>((set, get) => ({
     AsyncStorage.removeItem("queue");
   },
 
-  fetchSongs: async (query) => {
-    set({ loading: true });
+  fetchSongs: async (query, page = 0) => {
+    const isFirstPage = page === 0;
+    if (isFirstPage) set({ loading: true });
+    else set({ loadingMore: true });
     try {
-      const results = await searchSongs(query);
-      set({ songs: results });
+      const { results, total } = await searchSongs(query, page, 20);
+      if (isFirstPage) {
+        set({
+          songs: results,
+          currentQuery: query,
+          currentPage: 0,
+          totalSongs: total,
+        });
+      } else {
+        const { songs } = get();
+        const existingIds = new Set(songs.map((s) => s.id));
+        const newSongs = results.filter((s) => !existingIds.has(s.id));
+        set({
+          songs: [...songs, ...newSongs],
+          currentPage: page,
+          totalSongs: total,
+        });
+      }
     } finally {
-      set({ loading: false });
+      set({ loading: false, loadingMore: false });
     }
+  },
+
+  loadMoreSongs: async () => {
+    const { currentQuery, currentPage, totalSongs, songs, loading, loadingMore } =
+      get();
+    if (
+      !currentQuery ||
+      loading ||
+      loadingMore ||
+      songs.length >= totalSongs
+    )
+      return;
+    await get().fetchSongs(currentQuery, currentPage + 1);
   },
 
   setCurrentSong: async (song) => {

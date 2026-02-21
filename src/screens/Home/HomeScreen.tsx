@@ -14,7 +14,8 @@ const TABS = ["Suggested", "Songs", "Artists"];
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState("Suggested");
-  const { songs, loading, fetchSongs } = useSongStore();
+  const { songs, loading, loadingMore, fetchSongs, loadMoreSongs, totalSongs } =
+    useSongStore();
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -56,7 +57,15 @@ export default function HomeScreen() {
         <SuggestedTab artists={artists} songs={songs} loading={loading} />
       )}
 
-      {activeTab === "Songs" && <SongsTab songs={songs} loading={loading} />}
+      {activeTab === "Songs" && (
+        <SongsTab
+          songs={songs}
+          loading={loading}
+          loadingMore={loadingMore}
+          hasMore={songs.length < totalSongs}
+          onLoadMore={loadMoreSongs}
+        />
+      )}
 
       {activeTab === "Artists" && <ArtistsTab artists={artists} />}
     </SafeAreaView>
