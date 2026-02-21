@@ -22,7 +22,13 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
   const { theme } = useTheme();
   const [songs, setSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { setCurrentSong, currentSong, isPlaying, togglePlay } = useSongStore();
+  const {
+    setCurrentSong,
+    currentSong,
+    isPlaying,
+    togglePlay,
+    setShuffleEnabled,
+  } = useSongStore();
 
   useEffect(() => {
     loadArtistSongs();
@@ -43,15 +49,27 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
 
   const playAll = () => {
     if (songs.length > 0) {
+      setShuffleEnabled(false);
       useSongStore.setState({ songs });
       const firstSong = songs[0];
-      // If first song is already playing, toggle it
       if (currentSong?.id === firstSong.id) {
         togglePlay();
       } else {
         setCurrentSong(firstSong);
         navigation.navigate("Player");
       }
+    }
+  };
+
+  const playShuffle = () => {
+    if (songs.length === 0) return;
+    useSongStore.setState({ songs });
+    useSongStore.getState().setShuffleEnabled(true);
+    const { songs: storeSongs, shuffledIndices } = useSongStore.getState();
+    const firstIdx = shuffledIndices[0];
+    if (firstIdx !== undefined && storeSongs[firstIdx]) {
+      setCurrentSong(storeSongs[firstIdx]);
+      navigation.navigate("Player");
     }
   };
 
@@ -104,24 +122,47 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
           {/* Optional: Add duration if you have the data, otherwise leave it clean */}
         </View>
 
-        {/* Big Action Button (No Shuffle) */}
+        {/* Shuffle and Play buttons (like reference) */}
         {!loading && songs.length > 0 && (
           <View style={tw`w-full flex-row mt-8 px-2`}>
+            <TouchableOpacity
+              onPress={playShuffle}
+              activeOpacity={0.8}
+              style={[
+                tw`flex-1 flex-row items-center justify-center py-4 rounded-full shadow-md mr-2`,
+                { backgroundColor: theme.primary },
+              ]}
+            >
+              <Ionicons
+                name="shuffle"
+                size={22}
+                color="white"
+                style={tw`mr-2`}
+              />
+              <Text style={tw`text-white font-bold text-base tracking-wide`}>
+                Shuffle
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={playAll}
               activeOpacity={0.8}
               style={[
-                tw`flex-1 flex-row items-center justify-center py-4 rounded-full shadow-md`,
-                { backgroundColor: theme.primary }, // Matches the orange button style
+                tw`flex-1 flex-row items-center justify-center py-4 rounded-full border-2`,
+                { borderColor: theme.primary, backgroundColor: theme.card },
               ]}
             >
               <Ionicons
                 name={isArtistPlaying ? "pause" : "play"}
-                size={24}
-                color="white"
+                size={22}
+                color={theme.primary}
                 style={tw`mr-2`}
               />
-              <Text style={tw`text-white font-bold text-lg tracking-wide`}>
+              <Text
+                style={[
+                  tw`font-bold text-base tracking-wide`,
+                  { color: theme.primary },
+                ]}
+              >
                 {isArtistPlaying ? "Pause" : "Play"}
               </Text>
             </TouchableOpacity>

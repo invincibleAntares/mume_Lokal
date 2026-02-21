@@ -20,8 +20,14 @@ import { useState } from "react";
 
 export default function SongRow({ song }: { song: Song }) {
   const { theme } = useTheme();
-  const { setCurrentSong, currentSong, isPlaying, addToQueue, togglePlay } =
-    useSongStore();
+  const {
+    setCurrentSong,
+    currentSong,
+    isPlaying,
+    addToQueue,
+    togglePlay,
+    loadingSongId,
+  } = useSongStore();
   const {
     isDownloaded,
     downloadingIds,
@@ -35,6 +41,7 @@ export default function SongRow({ song }: { song: Song }) {
   const [showMenu, setShowMenu] = useState(false);
 
   const isCurrentSong = currentSong?.id === song.id;
+  const isPlayLoading = loadingSongId === song.id;
   const isDownloading = downloadingIds.includes(song.id);
   const downloaded = isDownloaded(song.id);
   const error = errorById[song.id];
@@ -95,20 +102,25 @@ export default function SongRow({ song }: { song: Song }) {
 
       <TouchableOpacity
         onPress={() => {
+          if (isPlayLoading) return;
           if (isCurrentSong) {
             togglePlay();
           } else {
             setCurrentSong(song);
           }
-          // Play button never opens full player; only pic/title do
         }}
         style={tw`mr-3`}
+        disabled={isPlayLoading}
       >
-        <Ionicons
-          name={isCurrentSong && isPlaying ? "pause" : "play"}
-          size={24}
-          color={theme.primary}
-        />
+        {isPlayLoading ? (
+          <ActivityIndicator size="small" color={theme.primary} />
+        ) : (
+          <Ionicons
+            name={isCurrentSong && isPlaying ? "pause" : "play"}
+            size={24}
+            color={theme.primary}
+          />
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => setShowMenu(true)}>
