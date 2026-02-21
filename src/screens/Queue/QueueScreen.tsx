@@ -9,7 +9,7 @@ import { getPrimaryArtists, getSongDisplayName } from "../../utils/songHelpers";
 
 export default function QueueScreen({ navigation }: any) {
   const { theme } = useTheme();
-  const { queue, removeFromQueue, clearQueue, setCurrentSong } = useSongStore();
+  const { queue, removeFromQueue, reorderQueue, clearQueue, setCurrentSong } = useSongStore();
 
   return (
     <SafeAreaView style={[tw`flex-1`, { backgroundColor: theme.background }]}>
@@ -63,46 +63,105 @@ export default function QueueScreen({ navigation }: any) {
         <FlatList
           data={queue}
           keyExtractor={(item, index) => `${item.id}-${index}`}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <View
               style={[
-                tw`flex-row items-center px-4 py-3`,
-                { borderBottomWidth: 1, borderBottomColor: theme.border },
+                tw`flex-row items-center mx-4 mb-2 py-3 px-3 rounded-xl`,
+                { backgroundColor: theme.card },
               ]}
             >
+              {/* Position + Reorder group */}
+              <View
+                style={[
+                  tw`items-center justify-center rounded-lg mr-3`,
+                  { backgroundColor: theme.background, minWidth: 44 },
+                ]}
+              >
+                <Text
+                  style={[tw`text-xs font-semibold`, { color: theme.subText }]}
+                >
+                  {index + 1}
+                </Text>
+                <View style={tw`flex-row items-center mt-0.5`}>
+                  <TouchableOpacity
+                    onPress={() => reorderQueue(index, index - 1)}
+                    disabled={index === 0}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={tw`p-0.5`}
+                  >
+                    <Ionicons
+                      name="chevron-up"
+                      size={18}
+                      color={
+                        index === 0 ? theme.subText + "40" : theme.primary
+                      }
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => reorderQueue(index, index + 1)}
+                    disabled={index === queue.length - 1}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={tw`p-0.5`}
+                  >
+                    <Ionicons
+                      name="chevron-down"
+                      size={18}
+                      color={
+                        index === queue.length - 1
+                          ? theme.subText + "40"
+                          : theme.primary
+                      }
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <TouchableOpacity
                 onPress={() => {
                   removeFromQueue(item.id);
                   setCurrentSong(item);
                 }}
                 style={tw`flex-1 flex-row items-center`}
+                activeOpacity={0.7}
               >
                 <Image
                   source={{ uri: getBestImage(item.image) }}
-                  style={tw`w-12 h-12 rounded mr-3 bg-gray-700`}
+                  style={tw`w-12 h-12 rounded-lg mr-3 bg-gray-700`}
                 />
-                <View style={tw`flex-1 mr-3`}>
+                <View style={tw`flex-1 mr-2 min-w-0`}>
                   <Text
                     numberOfLines={1}
-                    style={[tw`text-sm font-medium`, { color: theme.text }]}
+                    style={[tw`text-sm font-semibold`, { color: theme.text }]}
                   >
                     {getSongDisplayName(item)}
                   </Text>
                   <Text
                     numberOfLines={1}
-                    style={[tw`text-xs mt-1`, { color: theme.subText }]}
+                    style={[tw`text-xs mt-0.5`, { color: theme.subText }]}
                   >
                     {getPrimaryArtists(item)}
                   </Text>
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => removeFromQueue(item.id)}>
-                <Ionicons name="close-circle" size={24} color={theme.subText} />
+              <TouchableOpacity
+                onPress={() => removeFromQueue(item.id)}
+                style={[
+                  tw`p-2 rounded-full`,
+                  { backgroundColor: theme.background },
+                ]}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name="close"
+                  size={20}
+                  color={theme.subText}
+                />
               </TouchableOpacity>
             </View>
           )}
-          contentContainerStyle={tw`pb-24`}
+          contentContainerStyle={tw`px-0 pb-24 pt-1`}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </SafeAreaView>

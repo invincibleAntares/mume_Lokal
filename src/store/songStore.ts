@@ -77,6 +77,7 @@ interface SongState {
   queue: Song[];
   addToQueue: (song: Song) => void;
   removeFromQueue: (songId: string) => void;
+  reorderQueue: (fromIndex: number, toIndex: number) => void;
   clearQueue: () => void;
 
   setCurrentSong: (song: Song) => Promise<void>;
@@ -120,6 +121,16 @@ export const useSongStore = create<SongState>((set, get) => ({
     const updated = queue.filter((s) => s.id !== songId);
     set({ queue: updated });
     AsyncStorage.setItem("queue", JSON.stringify(updated));
+  },
+
+  reorderQueue: (fromIndex, toIndex) => {
+    const { queue } = get();
+    if (fromIndex < 0 || toIndex < 0 || fromIndex >= queue.length || toIndex >= queue.length) return;
+    const reordered = [...queue];
+    const [item] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, item);
+    set({ queue: reordered });
+    AsyncStorage.setItem("queue", JSON.stringify(reordered));
   },
 
   clearQueue: () => {
