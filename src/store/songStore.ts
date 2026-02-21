@@ -9,6 +9,7 @@ import {
   setOnPlaybackStatusUpdate,
 } from "../audio/audioService";
 import { getBestAudio } from "../utils/getAudioUrl";
+import { useOfflineStore } from "./offlineStore";
 import { getSongDisplayName, getPrimaryArtists } from "../utils/songHelpers";
 import {
   saveLastPlayedSong,
@@ -198,7 +199,9 @@ export const useSongStore = create<SongState>((set, get) => ({
       set({ songs });
     }
 
-    const url = getBestAudio(song.downloadUrl);
+    const url =
+      useOfflineStore.getState().getLocalUri(song.id) ??
+      getBestAudio(song.downloadUrl);
     if (!url) return;
 
     setOnPlaybackStatusUpdate((status) => {
@@ -326,7 +329,9 @@ export const useSongStore = create<SongState>((set, get) => ({
     const { currentSong, isPlaying } = get();
     if (!currentSong || isPlaying) return;
 
-    const url = getBestAudio(currentSong.downloadUrl);
+    const url =
+      useOfflineStore.getState().getLocalUri(currentSong.id) ??
+      getBestAudio(currentSong.downloadUrl);
     if (!url) return;
 
     setOnPlaybackStatusUpdate((status) => {

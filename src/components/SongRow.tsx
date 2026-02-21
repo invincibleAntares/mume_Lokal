@@ -1,7 +1,15 @@
-import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+} from "react-native";
 import tw from "twrnc";
 import { useTheme } from "../theme/ThemeContext";
 import { Song, useSongStore } from "../store/songStore";
+import { useOfflineStore } from "../store/offlineStore";
 import { getBestImage } from "../utils/getImage";
 import { getPrimaryArtists, getSongDisplayName } from "../utils/songHelpers";
 import { useNavigation } from "@react-navigation/native";
@@ -12,15 +20,38 @@ import { useState } from "react";
 
 export default function SongRow({ song }: { song: Song }) {
   const { theme } = useTheme();
-  const { setCurrentSong, currentSong, isPlaying, addToQueue } = useSongStore();
+  const { setCurrentSong, currentSong, isPlaying, addToQueue, togglePlay } =
+    useSongStore();
+  const {
+    isDownloaded,
+    downloadingIds,
+    errorById,
+    downloadSong,
+    removeDownload,
+    clearError,
+  } = useOfflineStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const [showMenu, setShowMenu] = useState(false);
 
   const isCurrentSong = currentSong?.id === song.id;
+  const isDownloading = downloadingIds.includes(song.id);
+  const downloaded = isDownloaded(song.id);
+  const error = errorById[song.id];
 
   const handleAddToQueue = () => {
     addToQueue(song);
+    setShowMenu(false);
+  };
+
+  const handleDownloadOffline = () => {
+    if (downloaded || isDownloading) return;
+    clearError(song.id);
+    downloadSong(song);
+  };
+
+  const handleRemoveDownload = () => {
+    removeDownload(song.id);
     setShowMenu(false);
   };
 
@@ -43,7 +74,14 @@ export default function SongRow({ song }: { song: Song }) {
         />
       </TouchableOpacity>
 
-      <View style={tw`flex-1`}>
+      <TouchableOpacity
+        style={tw`flex-1`}
+        onPress={() => {
+          setCurrentSong(song);
+          navigation.navigate("Player");
+        }}
+        activeOpacity={0.8}
+      >
         <Text
           style={[tw`text-base font-medium`, { color: theme.text }]}
           numberOfLines={1}
@@ -53,9 +91,19 @@ export default function SongRow({ song }: { song: Song }) {
         <Text style={[tw`text-sm`, { color: theme.subText }]} numberOfLines={1}>
           {getPrimaryArtists(song)}
         </Text>
-      </View>
+      </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => setCurrentSong(song)} style={tw`mr-3`}>
+      <TouchableOpacity
+        onPress={() => {
+          if (isCurrentSong) {
+            togglePlay();
+          } else {
+            setCurrentSong(song);
+          }
+          // Play button never opens full player; only pic/title do
+        }}
+        style={tw`mr-3`}
+      >
         <Ionicons
           name={isCurrentSong && isPlaying ? "pause" : "play"}
           size={24}
@@ -120,6 +168,54 @@ export default function SongRow({ song }: { song: Song }) {
                   Add to Queue
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleDownloadOffline}
+                disabled={downloaded || isDownloading}
+                style={[
+                  tw`flex-row items-center p-4 rounded-lg mt-2`,
+                  { backgroundColor: theme.background },
+                ]}
+              >
+                {isDownloading ? (
+                  <ActivityIndicator size="small" color={theme.text} />
+                ) : (
+                  <Ionicons
+                    name={downloaded ? "checkmark-circle" : "cloud-download-outline"}
+                    size={24}
+                    color={downloaded ? theme.primary : theme.text}
+                  />
+                )}
+                <Text
+                  style={[
+                    tw`text-base ml-4`,
+                    {
+                      color: error ? theme.primary : downloaded ? theme.primary : theme.text,
+                    },
+                  ]}
+                >
+                  {error || (downloaded ? "Downloaded" : isDownloading ? "Downloading..." : "Download offline")}
+                </Text>
+              </TouchableOpacity>
+
+              {downloaded && (
+                <TouchableOpacity
+                  onPress={handleRemoveDownload}
+                  style={[
+                    tw`flex-row items-center p-4 rounded-lg mt-2`,
+                    { backgroundColor: theme.background },
+                  ]}
+                >
+                  <Ionicons
+                    name="trash-outline"
+                    size={24}
+                    color={theme.subText}
+                  />
+                  <Text style={[tw`text-base ml-4`, { color: theme.subText }]}>
+                    Remove download
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 onPress={() => setShowMenu(false)}

@@ -4,6 +4,7 @@ import { ThemeProvider } from "./src/theme/ThemeContext";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { useEffect } from "react";
 import { useSongStore } from "./src/store/songStore";
+import { useOfflineStore } from "./src/store/offlineStore";
 
 function Bootstrap() {
   const hydratePlayer = useSongStore((s) => s.hydratePlayer);
@@ -12,6 +13,7 @@ function Bootstrap() {
     hydratePlayer();
     useSongStore.getState().hydrateRecentlyPlayed();
     useSongStore.getState().hydrateQueue();
+    useOfflineStore.getState().hydrateOffline();
   }, []);
 
   return null;

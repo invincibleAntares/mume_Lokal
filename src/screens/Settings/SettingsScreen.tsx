@@ -3,9 +3,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "twrnc";
 import { useTheme } from "../../theme/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { SettingsStackParamList } from "../../navigation/types";
+import { useOfflineStore } from "../../store/offlineStore";
 
 export default function SettingsScreen() {
   const { theme, mode, setMode } = useTheme();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<SettingsStackParamList>>();
+  const downloads = useOfflineStore((s) => s.downloads);
 
   const themeOptions: Array<"light" | "dark" | "system"> = [
     "light",
@@ -75,6 +82,43 @@ export default function SettingsScreen() {
             )}
           </TouchableOpacity>
         ))}
+      </View>
+
+      {/* Offline Section */}
+      <View style={tw`px-4 mt-6`}>
+        <Text
+          style={[tw`text-sm font-semibold mb-3`, { color: theme.subText }]}
+        >
+          OFFLINE
+        </Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("OfflineSongs")}
+          style={[
+            tw`flex-row items-center justify-between px-4 py-4 rounded-lg`,
+            { backgroundColor: theme.card },
+          ]}
+        >
+          <View style={tw`flex-row items-center`}>
+            <Ionicons
+              name="cloud-download-outline"
+              size={22}
+              color={theme.text}
+              style={tw`mr-3`}
+            />
+            <View>
+              <Text
+                style={[tw`text-base font-medium`, { color: theme.text }]}
+              >
+                Offline songs
+              </Text>
+              <Text style={[tw`text-xs mt-0.5`, { color: theme.subText }]}>
+                {downloads.length}{" "}
+                {downloads.length === 1 ? "song" : "songs"} downloaded
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={22} color={theme.subText} />
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

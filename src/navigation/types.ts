@@ -18,3 +18,8 @@ export type HomeStackParamList = {
   };
   Search: undefined;
 };
+
+export type SettingsStackParamList = {
+  SettingsMain: undefined;
+  OfflineSongs: undefined;
+};

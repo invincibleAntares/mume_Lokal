@@ -11,9 +11,10 @@ import HomeScreen from "../screens/Home/HomeScreen";
 import FavoritesScreen from "../screens/Favorites/FavoritesScreen";
 import PlaylistsScreen from "../screens/Playlists/PlaylistsScreen";
 import SettingsScreen from "../screens/Settings/SettingsScreen";
+import OfflineSongsScreen from "../screens/Settings/OfflineSongsScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import PlayerScreen from "../screens/Player/PlayerScreen";
-import { HomeStackParamList } from "./types";
+import { HomeStackParamList, SettingsStackParamList } from "./types";
 import MiniPlayer from "../components/MiniPlayer";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import SongListScreen from "../screens/SeeAll/SongListScreen";
@@ -23,7 +24,7 @@ import SearchScreen from "../screens/Search/SearchScreen";
 import QueueScreen from "../screens/Queue/QueueScreen";
 import tw from "twrnc";
 const Stack = createNativeStackNavigator<HomeStackParamList>();
-
+const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 const Tab = createBottomTabNavigator();
 
 function HomeStack() {
@@ -46,6 +47,15 @@ function HomeStack() {
       <Stack.Screen name="ArtistsList" component={ArtistsListScreen} />
       <Stack.Screen name="Search" component={SearchScreen} />
     </Stack.Navigator>
+  );
+}
+
+function SettingsStackNavigator() {
+  return (
+    <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
+      <SettingsStack.Screen name="SettingsMain" component={SettingsScreen} />
+      <SettingsStack.Screen name="OfflineSongs" component={OfflineSongsScreen} />
+    </SettingsStack.Navigator>
   );
 }
 
@@ -126,7 +136,7 @@ export default function BottomTabs() {
       />
       <Tab.Screen
         name="Settings"
-        component={SettingsScreen}
+        component={SettingsStackNavigator}
         options={{
           tabBarIcon: ({ color }) => (
             <Ionicons name="settings" size={24} color={color} />

@@ -43,7 +43,10 @@ export default function RecentlyPlayed() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={tw`mr-4 w-32`}
-            onPress={() => setCurrentSong(item)}
+            onPress={() => {
+              setCurrentSong(item);
+              navigation.navigate("Player");
+            }}
             activeOpacity={0.8}
           >
             <Image

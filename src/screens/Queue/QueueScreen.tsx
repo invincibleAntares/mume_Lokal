@@ -120,6 +120,7 @@ export default function QueueScreen({ navigation }: any) {
                 onPress={() => {
                   removeFromQueue(item.id);
                   setCurrentSong(item);
+                  navigation.navigate("Player");
                 }}
                 style={tw`flex-1 flex-row items-center`}
                 activeOpacity={0.7}

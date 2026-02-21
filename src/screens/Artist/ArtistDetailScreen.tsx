@@ -50,6 +50,7 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
         togglePlay();
       } else {
         setCurrentSong(firstSong);
+        navigation.navigate("Player");
       }
     }
   };
