@@ -133,9 +133,14 @@ export const useSongStore = create<SongState>((set, get) => ({
   },
 
   setCurrentSong: async (song) => {
-    const { songs } = get();
-    const index = songs.findIndex((s) => s.id === song.id);
-    if (index === -1) return;
+    let { songs } = get();
+    let index = songs.findIndex((s) => s.id === song.id);
+    // If song isn't in the current list (e.g. from Recently Played, Queue, or another source), add it so playback works
+    if (index === -1) {
+      songs = [song, ...songs.filter((s) => s.id !== song.id)];
+      index = 0;
+      set({ songs });
+    }
 
     const url = getBestAudio(song.downloadUrl);
     if (!url) return;

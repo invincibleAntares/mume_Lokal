@@ -1,5 +1,12 @@
-export function getBestImage(images: { quality: string; url: string }[] = []) {
-  const preferred = images.find((img) => img.quality === "150x150");
+// API can return either .url (songs by id) or .link (search results)
+type ImageItem = { quality: string; url?: string; link?: string };
 
-  return preferred?.url || images[0]?.url || undefined;
+function getImageUrl(img: ImageItem): string | undefined {
+  return img?.url ?? img?.link;
+}
+
+export function getBestImage(images: ImageItem[] = []) {
+  const preferred = images.find((img) => img.quality === "150x150");
+  if (preferred) return getImageUrl(preferred);
+  return images[0] ? getImageUrl(images[0]) : undefined;
 }

@@ -12,6 +12,7 @@ import { useTheme } from "../../theme/ThemeContext";
 import { useSongStore } from "../../store/songStore";
 import SongRow from "../../components/SongRow";
 import { getBestImage } from "../../utils/getImage";
+import { decodeHtmlEntities } from "../../utils/decodeHtmlEntities";
 import { useEffect, useState } from "react";
 import { getArtistSongs } from "../../api/saavn";
 import { Ionicons } from "@expo/vector-icons";
@@ -87,7 +88,7 @@ export default function ArtistDetailScreen({ route, navigation }: any) {
             { color: theme.text },
           ]}
         >
-          {artist.name}
+          {decodeHtmlEntities(artist.name)}
         </Text>
 
         {/* Stats Row (Mimicking the "1 Album | 20 Songs" style) */}

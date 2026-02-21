@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import tw from "twrnc";
 import { useTheme } from "../../theme/ThemeContext";
 import { getBestImage } from "../../utils/getImage";
+import { decodeHtmlEntities } from "../../utils/decodeHtmlEntities";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 
@@ -19,7 +20,9 @@ export default function ArtistsListScreen({ route, navigation }: any) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredArtists = artists.filter((artist: any) =>
-    artist.name.toLowerCase().includes(searchQuery.toLowerCase())
+    decodeHtmlEntities(artist.name)
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -67,7 +70,7 @@ export default function ArtistsListScreen({ route, navigation }: any) {
                 numberOfLines={1}
                 style={[tw`text-base font-medium`, { color: theme.text }]}
               >
-                {item.name}
+                {decodeHtmlEntities(item.name)}
               </Text>
               {(item.albumCount || item.songCount) && (
                 <Text

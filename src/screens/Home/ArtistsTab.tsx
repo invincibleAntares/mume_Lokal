@@ -4,6 +4,7 @@ import tw from "twrnc";
 import { useTheme } from "../../theme/ThemeContext";
 import { useNavigation } from "@react-navigation/native";
 import { getBestImage } from "../../utils/getImage";
+import { decodeHtmlEntities } from "../../utils/decodeHtmlEntities";
 
 interface ArtistsTabProps {
   artists: any[];
@@ -35,7 +36,7 @@ export default function ArtistsTab({ artists }: ArtistsTabProps) {
               numberOfLines={1}
               style={[tw`text-base font-medium`, { color: theme.text }]}
             >
-              {item.name}
+              {decodeHtmlEntities(item.name)}
             </Text>
             {(item.albumCount || item.songCount) && (
               <Text

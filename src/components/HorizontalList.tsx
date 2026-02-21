@@ -1,6 +1,7 @@
 import { FlatList, Image, Text, View } from "react-native";
 import tw from "twrnc";
 import { useTheme } from "../theme/ThemeContext";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 
 export default function HorizontalList({
   data,
@@ -31,7 +32,7 @@ export default function HorizontalList({
               style={[tw`text-sm mt-2`, { color: theme.text }]}
               numberOfLines={2}
             >
-              {item.title}
+              {decodeHtmlEntities(item.title)}
             </Text>
           )}
           {item.name && (
@@ -39,7 +40,7 @@ export default function HorizontalList({
               style={[tw`text-sm mt-2 text-center`, { color: theme.text }]}
               numberOfLines={1}
             >
-              {item.name}
+              {decodeHtmlEntities(item.name)}
             </Text>
           )}
         </View>

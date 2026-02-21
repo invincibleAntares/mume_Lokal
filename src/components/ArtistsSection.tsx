@@ -3,6 +3,7 @@ import tw from "twrnc";
 import { useTheme } from "../theme/ThemeContext";
 import { useNavigation } from "@react-navigation/native";
 import { getBestImage } from "../utils/getImage";
+import { decodeHtmlEntities } from "../utils/decodeHtmlEntities";
 
 export default function ArtistsSection({ artists }: { artists: any[] }) {
   const { theme } = useTheme();
@@ -45,7 +46,7 @@ export default function ArtistsSection({ artists }: { artists: any[] }) {
               numberOfLines={1}
               style={[tw`mt-2 text-sm`, { color: theme.text, width: 80 }]}
             >
-              {item.name}
+              {decodeHtmlEntities(item.name)}
             </Text>
           </TouchableOpacity>
         )}

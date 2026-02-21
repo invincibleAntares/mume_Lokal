@@ -3,7 +3,7 @@ import tw from "twrnc";
 import { useTheme } from "../theme/ThemeContext";
 import { Song, useSongStore } from "../store/songStore";
 import { getBestImage } from "../utils/getImage";
-import { getPrimaryArtists } from "../utils/songHelpers";
+import { getPrimaryArtists, getSongDisplayName } from "../utils/songHelpers";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/types";
@@ -48,7 +48,7 @@ export default function SongRow({ song }: { song: Song }) {
           style={[tw`text-base font-medium`, { color: theme.text }]}
           numberOfLines={1}
         >
-          {song.name}
+          {getSongDisplayName(song)}
         </Text>
         <Text style={[tw`text-sm`, { color: theme.subText }]} numberOfLines={1}>
           {getPrimaryArtists(song)}
@@ -93,7 +93,7 @@ export default function SongRow({ song }: { song: Song }) {
                     style={[tw`text-base font-semibold`, { color: theme.text }]}
                     numberOfLines={1}
                   >
-                    {song.name}
+                    {getSongDisplayName(song)}
                   </Text>
                   <Text
                     style={[tw`text-sm mt-1`, { color: theme.subText }]}

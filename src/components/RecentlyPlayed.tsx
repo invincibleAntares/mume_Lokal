@@ -3,6 +3,7 @@ import tw from "twrnc";
 import { useSongStore } from "../store/songStore";
 import { useTheme } from "../theme/ThemeContext";
 import { getBestImage } from "../utils/getImage";
+import { getSongDisplayName } from "../utils/songHelpers";
 import { useNavigation } from "@react-navigation/native";
 
 export default function RecentlyPlayed() {
@@ -53,7 +54,7 @@ export default function RecentlyPlayed() {
               numberOfLines={2}
               style={[tw`mt-2 text-sm`, { color: theme.text }]}
             >
-              {item.name}
+              {getSongDisplayName(item)}
             </Text>
           </TouchableOpacity>
         )}

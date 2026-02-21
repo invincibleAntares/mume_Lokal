@@ -11,6 +11,7 @@ import tw from "twrnc";
 import { useTheme } from "../../theme/ThemeContext";
 import { useNavigation } from "@react-navigation/native";
 import { getBestImage } from "../../utils/getImage";
+import { getSongDisplayName } from "../../utils/songHelpers";
 import { useSongStore } from "../../store/songStore";
 
 interface SuggestedSongsProps {
@@ -69,7 +70,7 @@ export default function SuggestedSongs({
                 numberOfLines={2}
                 style={[tw`mt-2 text-sm`, { color: theme.text }]}
               >
-                {item.name}
+                {getSongDisplayName(item)}
               </Text>
             </TouchableOpacity>
           )}

@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../theme/ThemeContext";
 import { useSongStore } from "../../store/songStore";
 import { getBestImage } from "../../utils/getImage";
-import { getPrimaryArtists } from "../../utils/songHelpers";
+import { getPrimaryArtists, getSongDisplayName } from "../../utils/songHelpers";
 
 export default function QueueScreen({ navigation }: any) {
   const { theme } = useTheme();
@@ -86,7 +86,7 @@ export default function QueueScreen({ navigation }: any) {
                     numberOfLines={1}
                     style={[tw`text-sm font-medium`, { color: theme.text }]}
                   >
-                    {item.name}
+                    {getSongDisplayName(item)}
                   </Text>
                   <Text
                     numberOfLines={1}

@@ -1,17 +1,35 @@
 import { Song } from "../store/songStore";
+import { decodeHtmlEntities } from "./decodeHtmlEntities";
+
+/** Strip "(From Movie Name)" or "(From \"Movie Name\")" suffix from song name */
+function stripFromMovieSuffix(name: string): string {
+  return name
+    .replace(/\s*\(From\s+[^)]*\)\s*$/i, "")
+    .trim();
+}
 
 /**
- * Get primary artists as a comma-separated string
+ * Get song display name: decoded, and without "(From movie name)" suffix.
+ */
+export function getSongDisplayName(song: Song): string {
+  const decoded = decodeHtmlEntities(song.name);
+  return stripFromMovieSuffix(decoded);
+}
+
+/**
+ * Get primary artists as a comma-separated string (decoded).
  * Supports both old and new API formats
  */
 export function getPrimaryArtists(song: Song): string {
   // New format
   if (song.artists?.primary) {
-    return song.artists.primary.map((a) => a.name).join(", ");
+    return song.artists.primary
+      .map((a) => decodeHtmlEntities(a.name))
+      .join(", ");
   }
 
   // Legacy format
-  return song.primaryArtists || "Unknown Artist";
+  return decodeHtmlEntities(song.primaryArtists) || "Unknown Artist";
 }
 
 /**
@@ -25,8 +43,8 @@ export function getArtistIds(song: Song): string[] {
 }
 
 /**
- * Get album name from song
+ * Get album name from song (decoded)
  */
 export function getAlbumName(song: Song): string {
-  return song.album?.name || "Unknown Album";
+  return decodeHtmlEntities(song.album?.name) || "Unknown Album";
 }
